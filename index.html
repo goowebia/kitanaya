@@ -88,6 +88,22 @@
             text-align: center;
             z-index: 10;
             border: 1px solid rgba(255,255,255,1);
+            transition: all 0.3s ease;
+        }
+
+        /* --- AMPLIAR DASHBOARD EN PANTALLAS GRANDES --- */
+        @media (min-width: 768px) {
+            #view-staff-dashboard {
+                max-width: 800px; /* Más ancho en tablets/PCs */
+            }
+            .dashboard-columns {
+                display: flex;
+                gap: 30px;
+                text-align: left;
+            }
+            .dashboard-col {
+                flex: 1;
+            }
         }
 
         .card h2 { 
@@ -176,7 +192,18 @@
             font-size: 13px; color: #fff; background: var(--primary);
             padding: 10px 20px; border-radius: 10px; margin-bottom: 15px;
             text-transform: uppercase; letter-spacing: 1px;
+            position: sticky; top: 0; z-index: 5;
         }
+        
+        .list-container {
+            max-height: 400px; /* Límite de altura para hacer scroll */
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        /* Estilizar barra de scroll */
+        .list-container::-webkit-scrollbar { width: 6px; }
+        .list-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .list-container::-webkit-scrollbar-thumb { background: #c5a059; border-radius: 10px; }
 
         .player-item {
             background: #fff; margin-bottom: 10px; padding: 15px 20px;
@@ -184,7 +211,15 @@
             align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.04);
             border: 1px solid #f0f0f0;
             animation: fadeIn 0.4s ease;
+            transition: all 0.3s;
         }
+        /* Color especial para los recién entregados */
+        .player-item.just-delivered {
+            background: #e8f5e9;
+            border-color: var(--success);
+            transform: scale(1.02);
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .player-info { text-align: left; }
@@ -231,6 +266,18 @@
 
         .creator-footer { z-index: 10; text-align: center; margin-top: 10px; }
         .creator-text { color: #555; font-size: 11px; letter-spacing: 1px; font-weight: 600; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
+        
+        /* INDICADOR EN VIVO */
+        .live-indicator {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 10px; font-weight: bold; color: var(--success);
+            padding: 4px 10px; background: #e8f5e9; border-radius: 20px;
+        }
+        .pulse-dot {
+            width: 8px; height: 8px; background: var(--success); border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); } 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
     </style>
 </head>
 <body>
@@ -284,31 +331,34 @@
         </div>
 
         <!-- VISTA STAFF: DASHBOARD -->
-        <div id="view-staff-dashboard" class="card hidden" style="max-width: 500px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div id="view-staff-dashboard" class="card hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap: wrap; gap: 10px;">
                 <div style="text-align:left;">
-                    <h2 style="margin:0; font-size:20px;">Panel Staff</h2>
-                    <span style="font-size:11px; color:#888;">Gestión de Kits</span>
+                    <h2 style="margin:0; font-size:20px;">Panel Recepción</h2>
+                    <span class="live-indicator"><div class="pulse-dot"></div> EN VIVO</span>
                 </div>
-                <button onclick="startScanner()" style="background:var(--primary); color:white; border:none; padding:10px 15px; border-radius:12px; font-weight:700; cursor:pointer;">📷 SCAN</button>
+                <button onclick="startScanner()" style="background:var(--primary); color:white; border:none; padding:10px 15px; border-radius:12px; font-weight:700; cursor:pointer; font-size: 14px;">📷 ESCANEAR QR</button>
             </div>
 
             <div class="stats-grid">
-                <div class="stat-box"><small>Total</small><div id="stat-total">0</div></div>
-                <div class="stat-box"><small>Entregados</small><div id="stat-delivered" style="color:var(--success)">0</div></div>
+                <div class="stat-box"><small>Total Registros</small><div id="stat-total">0</div></div>
+                <div class="stat-box"><small>Kits Entregados</small><div id="stat-delivered" style="color:var(--success)">0</div></div>
             </div>
 
-            <div class="list-section">
-                <h3>Pendientes</h3>
-                <div id="list-pending"></div>
-            </div>
+            <!-- ESTRUCTURA DE COLUMNAS PARA PANTALLAS GRANDES -->
+            <div class="dashboard-columns">
+                <div class="dashboard-col list-section">
+                    <h3>Pendientes por Entregar</h3>
+                    <div id="list-pending" class="list-container"></div>
+                </div>
 
-            <div class="list-section" style="margin-top:30px;">
-                <h3 style="background:#7f8c8d;">Recibidos</h3>
-                <div id="list-delivered"></div>
+                <div class="dashboard-col list-section" style="margin-top: 20px;">
+                    <h3 style="background:#7f8c8d;">Entregados (Recibidos)</h3>
+                    <div id="list-delivered" class="list-container"></div>
+                </div>
             </div>
             
-            <button onclick="location.reload()" style="background:none; border:none; color:#bbb; font-size:11px; margin-top:25px; text-transform:uppercase;">Cerrar Panel</button>
+            <button onclick="cerrarSesionStaff()" style="background:none; border:none; color:#bbb; font-size:11px; margin-top:25px; text-transform:uppercase; cursor:pointer;">Cerrar Panel</button>
         </div>
 
         <!-- LOGIN STAFF -->
@@ -373,6 +423,8 @@
 
         let html5QrCode;
         let autoCloseTimer;
+        let realtimeSubscription = null;
+        let lastUpdatedId = null; // Para saber a quién resaltar
 
         function toggleView(viewId) {
             document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
@@ -380,6 +432,7 @@
             if(viewId === 'view-staff-dashboard') {
                 document.getElementById('sponsors-section').classList.add('hidden');
                 refreshDashboard();
+                iniciarSuscripcionTiempoReal();
             } else {
                 document.getElementById('sponsors-section').classList.remove('hidden');
             }
@@ -451,18 +504,52 @@
             }
         }
 
+        function cerrarSesionStaff() {
+            if (realtimeSubscription) {
+                supabaseClient.removeChannel(realtimeSubscription);
+                realtimeSubscription = null;
+            }
+            document.getElementById('staff-pass').value = '';
+            location.reload();
+        }
+
+        // --- MAGIA EN TIEMPO REAL ---
+        function iniciarSuscripcionTiempoReal() {
+            if (realtimeSubscription) return; // Evitar múltiples suscripciones
+
+            realtimeSubscription = supabaseClient
+                .channel('cambios-golf')
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'anaya2026', table: 'prospectos_golf' },
+                    (payload) => {
+                        console.log('Cambio detectado:', payload);
+                        if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+                            lastUpdatedId = payload.new.id; // Guardamos el ID modificado para resaltarlo
+                        }
+                        refreshDashboard(); // Recargamos la lista automáticamente
+                    }
+                )
+                .subscribe();
+        }
+
         async function refreshDashboard() {
             const { data, error } = await supabaseClient.from('prospectos_golf').select('*');
             if (error) return;
 
+            // Ordenamos primero por los recién actualizados, luego por ID descendente
             const pending = data.filter(p => !p.kit_entregado).sort((a,b) => b.id - a.id);
-            const delivered = data.filter(p => p.kit_entregado).sort((a,b) => b.id - a.id);
+            const delivered = data.filter(p => p.kit_entregado).sort((a,b) => {
+                if (a.id === lastUpdatedId) return -1;
+                if (b.id === lastUpdatedId) return 1;
+                return b.id - a.id;
+            });
 
             document.getElementById('stat-total').textContent = data.length;
             document.getElementById('stat-delivered').textContent = delivered.length;
 
             const renderPendingRow = (p) => `
-                <div class="player-item">
+                <div class="player-item ${p.id === lastUpdatedId ? 'just-delivered' : ''}" id="player-${p.id}">
                     <div class="player-info">
                         <b>${p.nombre}</b>
                         <span>${p.empresa} (${p.giro || 'N/A'})</span>
@@ -472,7 +559,7 @@
             `;
 
             const renderDeliveredRow = (p) => `
-                <div class="player-item">
+                <div class="player-item ${p.id === lastUpdatedId ? 'just-delivered' : ''}" id="player-${p.id}">
                     <div class="player-info">
                         <b>${p.nombre}</b>
                         <span>${p.empresa} (${p.giro || 'N/A'})</span>
@@ -484,19 +571,24 @@
                 </div>
             `;
 
-            document.getElementById('list-pending').innerHTML = pending.length ? pending.map(renderPendingRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px;">Sin registros pendientes.</p>';
-            document.getElementById('list-delivered').innerHTML = delivered.length ? delivered.map(renderDeliveredRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px;">Aún no hay entregas.</p>';
+            document.getElementById('list-pending').innerHTML = pending.length ? pending.map(renderPendingRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px; text-align:center;">Sin registros pendientes.</p>';
+            document.getElementById('list-delivered').innerHTML = delivered.length ? delivered.map(renderDeliveredRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px; text-align:center;">Aún no hay entregas.</p>';
+            
+            // Quitar el resaltado verde después de 3 segundos
+            setTimeout(() => {
+                if(lastUpdatedId) {
+                    const el = document.getElementById(`player-${lastUpdatedId}`);
+                    if(el) el.classList.remove('just-delivered');
+                    lastUpdatedId = null;
+                }
+            }, 3000);
         }
 
-        // NUEVA FUNCIÓN: Regresar el kit a Pendiente
         async function revertirEntrega(id, nombre) {
             if(confirm(`¿Estás seguro de regresar el kit de ${nombre} a PENDIENTE?`)) {
+                // Hacemos el update. La actualización visual se hará sola vía Realtime
                 const { error } = await supabaseClient.from('prospectos_golf').update({ kit_entregado: false }).eq('id', id);
-                if(error) {
-                    alert('Error al actualizar. Revisa la conexión.');
-                } else {
-                    refreshDashboard(); // Recarga la lista automáticamente
-                }
+                if(error) alert('Error al actualizar. Revisa la conexión.');
             }
         }
 
@@ -524,6 +616,7 @@
         }
 
         async function procesarEntrega(id) {
+            // Hacemos el update. La actualización visual general se hará sola vía Realtime
             const { data, error } = await supabaseClient.from('prospectos_golf').update({ kit_entregado: true }).eq('id', id).select();
             if (data && data.length > 0) {
                 const p = data[0];
@@ -531,7 +624,10 @@
                 document.getElementById('modal-player-company').textContent = p.empresa;
                 document.getElementById('success-modal').style.display = 'flex';
                 
+                // Forzamos actualización local inmediata para el que escanea
+                lastUpdatedId = id;
                 refreshDashboard();
+                
                 document.getElementById('auto-close-txt').textContent = "Se cerrará automáticamente en 3s...";
                 autoCloseTimer = setTimeout(closeModal, 3000);
             } else {
