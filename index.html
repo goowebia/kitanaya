@@ -91,18 +91,10 @@
             transition: all 0.3s ease;
         }
 
-        /* --- AMPLIAR DASHBOARD EN PANTALLAS GRANDES --- */
+        /* En pantallas más grandes, el dashboard se expande un poco */
         @media (min-width: 768px) {
             #view-staff-dashboard {
-                max-width: 800px; /* Más ancho en tablets/PCs */
-            }
-            .dashboard-columns {
-                display: flex;
-                gap: 30px;
-                text-align: left;
-            }
-            .dashboard-col {
-                flex: 1;
+                max-width: 600px; 
             }
         }
 
@@ -174,31 +166,40 @@
             margin: 0 auto; 
         }
 
-        /* --- DASHBOARD STAFF --- */
+        /* --- DASHBOARD STAFF: ESTADÍSTICAS Y TABS --- */
         .stats-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
-            width: 100%; margin-bottom: 25px;
+            width: 100%; margin-bottom: 20px;
         }
         .stat-box {
-            background: #fff; padding: 20px;
+            background: #fff; padding: 15px;
             border-radius: 20px; text-align: center;
             border-bottom: 4px solid var(--accent);
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .stat-box small { font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; }
-        .stat-box div { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .stat-box small { font-size: 10px; font-weight: 700; color: #999; text-transform: uppercase; }
+        .stat-box div { font-size: 22px; font-weight: 800; color: var(--primary); }
 
-        .list-section h3 {
-            font-size: 13px; color: #fff; background: var(--primary);
-            padding: 10px 20px; border-radius: 10px; margin-bottom: 15px;
-            text-transform: uppercase; letter-spacing: 1px;
-            position: sticky; top: 0; z-index: 5;
+        /* TABS (Pestañas separadoras) */
+        .tabs-container {
+            display: flex; gap: 10px; margin-bottom: 20px; width: 100%;
         }
-        
+        .tab-btn {
+            flex: 1; padding: 12px 5px; border-radius: 12px; border: 2px solid transparent; 
+            font-weight: 700; cursor: pointer; background: #fff; color: #888; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: all 0.3s;
+            font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .tab-btn.active {
+            background: var(--primary); color: white; border-color: var(--primary);
+            box-shadow: 0 6px 15px rgba(10, 77, 46, 0.2);
+        }
+
         .list-container {
-            max-height: 400px; /* Límite de altura para hacer scroll */
+            max-height: 450px; /* Límite de altura para hacer scroll */
             overflow-y: auto;
             padding-right: 5px;
+            text-align: left;
         }
         /* Estilizar barra de scroll */
         .list-container::-webkit-scrollbar { width: 6px; }
@@ -218,15 +219,16 @@
             background: #e8f5e9;
             border-color: var(--success);
             transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(46, 204, 113, 0.15);
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .player-info { text-align: left; }
+        .player-info { text-align: left; flex: 1;}
         .player-info b { font-size: 14px; color: #1a1a1a; display: block; }
         .player-info span { font-size: 12px; color: #888; }
         
-        .status-badge { font-size: 10px; padding: 5px 12px; border-radius: 30px; font-weight: 700; }
+        .status-badge { font-size: 10px; padding: 5px 12px; border-radius: 30px; font-weight: 700; white-space: nowrap; }
         .status-pending { background: #fff8f0; color: #ef6c00; }
         .status-delivered { background: #f0fdf4; color: #16a34a; }
 
@@ -337,7 +339,7 @@
                     <h2 style="margin:0; font-size:20px;">Panel Recepción</h2>
                     <span class="live-indicator"><div class="pulse-dot"></div> EN VIVO</span>
                 </div>
-                <button onclick="startScanner()" style="background:var(--primary); color:white; border:none; padding:10px 15px; border-radius:12px; font-weight:700; cursor:pointer; font-size: 14px;">📷 ESCANEAR QR</button>
+                <button onclick="startScanner()" style="background:var(--primary); color:white; border:none; padding:10px 15px; border-radius:12px; font-weight:700; cursor:pointer; font-size: 14px; box-shadow: 0 4px 10px rgba(10, 77, 46, 0.3);">📷 ESCANEAR QR</button>
             </div>
 
             <div class="stats-grid">
@@ -345,17 +347,20 @@
                 <div class="stat-box"><small>Kits Entregados</small><div id="stat-delivered" style="color:var(--success)">0</div></div>
             </div>
 
-            <!-- ESTRUCTURA DE COLUMNAS PARA PANTALLAS GRANDES -->
-            <div class="dashboard-columns">
-                <div class="dashboard-col list-section">
-                    <h3>Pendientes por Entregar</h3>
-                    <div id="list-pending" class="list-container"></div>
-                </div>
+            <!-- TABS DE NAVEGACIÓN -->
+            <div class="tabs-container">
+                <button id="tab-pending" class="tab-btn active" onclick="switchTab('pending')">Pendientes (0)</button>
+                <button id="tab-delivered" class="tab-btn" onclick="switchTab('delivered')">Entregados (0)</button>
+            </div>
 
-                <div class="dashboard-col list-section" style="margin-top: 20px;">
-                    <h3 style="background:#7f8c8d;">Entregados (Recibidos)</h3>
-                    <div id="list-delivered" class="list-container"></div>
-                </div>
+            <!-- SECCIÓN PENDIENTES -->
+            <div id="section-pending" class="list-section">
+                <div id="list-pending" class="list-container"></div>
+            </div>
+
+            <!-- SECCIÓN ENTREGADOS -->
+            <div id="section-delivered" class="list-section hidden">
+                <div id="list-delivered" class="list-container"></div>
             </div>
             
             <button onclick="cerrarSesionStaff()" style="background:none; border:none; color:#bbb; font-size:11px; margin-top:25px; text-transform:uppercase; cursor:pointer;">Cerrar Panel</button>
@@ -395,7 +400,7 @@
             <p class="creator-text">CREADO POR GOOWEB BY TARGETS</p>
         </div>
         
-        <!-- HASHTAGS OCULTOS PARA SEO (Basado en la campaña de Manzanillo) -->
+        <!-- HASHTAGS OCULTOS PARA SEO -->
         <div style="display:none;">
             #manzanillogolf #golfmexico #torneogolf #golflife #golfmanzanillo #anayainvitational 
             #golf2026 #deportemanzanillo #golfers #vipregistration #manzanillo #colimagolf #golfclub #golfdestination
@@ -424,7 +429,7 @@
         let html5QrCode;
         let autoCloseTimer;
         let realtimeSubscription = null;
-        let lastUpdatedId = null; // Para saber a quién resaltar
+        let lastUpdatedId = null;
 
         function toggleView(viewId) {
             document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
@@ -435,6 +440,21 @@
                 iniciarSuscripcionTiempoReal();
             } else {
                 document.getElementById('sponsors-section').classList.remove('hidden');
+            }
+        }
+
+        // --- SISTEMA DE PESTAÑAS ---
+        function switchTab(tab) {
+            if(tab === 'pending') {
+                document.getElementById('tab-pending').classList.add('active');
+                document.getElementById('tab-delivered').classList.remove('active');
+                document.getElementById('section-pending').classList.remove('hidden');
+                document.getElementById('section-delivered').classList.add('hidden');
+            } else {
+                document.getElementById('tab-pending').classList.remove('active');
+                document.getElementById('tab-delivered').classList.add('active');
+                document.getElementById('section-pending').classList.add('hidden');
+                document.getElementById('section-delivered').classList.remove('hidden');
             }
         }
 
@@ -513,9 +533,8 @@
             location.reload();
         }
 
-        // --- MAGIA EN TIEMPO REAL ---
         function iniciarSuscripcionTiempoReal() {
-            if (realtimeSubscription) return; // Evitar múltiples suscripciones
+            if (realtimeSubscription) return; 
 
             realtimeSubscription = supabaseClient
                 .channel('cambios-golf')
@@ -525,9 +544,9 @@
                     (payload) => {
                         console.log('Cambio detectado:', payload);
                         if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-                            lastUpdatedId = payload.new.id; // Guardamos el ID modificado para resaltarlo
+                            lastUpdatedId = payload.new.id; 
                         }
-                        refreshDashboard(); // Recargamos la lista automáticamente
+                        refreshDashboard(); 
                     }
                 )
                 .subscribe();
@@ -537,7 +556,6 @@
             const { data, error } = await supabaseClient.from('prospectos_golf').select('*');
             if (error) return;
 
-            // Ordenamos primero por los recién actualizados, luego por ID descendente
             const pending = data.filter(p => !p.kit_entregado).sort((a,b) => b.id - a.id);
             const delivered = data.filter(p => p.kit_entregado).sort((a,b) => {
                 if (a.id === lastUpdatedId) return -1;
@@ -545,8 +563,11 @@
                 return b.id - a.id;
             });
 
+            // Actualizar contadores y texto de pestañas
             document.getElementById('stat-total').textContent = data.length;
             document.getElementById('stat-delivered').textContent = delivered.length;
+            document.getElementById('tab-pending').textContent = `Pendientes (${pending.length})`;
+            document.getElementById('tab-delivered').textContent = `Entregados (${delivered.length})`;
 
             const renderPendingRow = (p) => `
                 <div class="player-item ${p.id === lastUpdatedId ? 'just-delivered' : ''}" id="player-${p.id}">
@@ -574,7 +595,6 @@
             document.getElementById('list-pending').innerHTML = pending.length ? pending.map(renderPendingRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px; text-align:center;">Sin registros pendientes.</p>';
             document.getElementById('list-delivered').innerHTML = delivered.length ? delivered.map(renderDeliveredRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px; text-align:center;">Aún no hay entregas.</p>';
             
-            // Quitar el resaltado verde después de 3 segundos
             setTimeout(() => {
                 if(lastUpdatedId) {
                     const el = document.getElementById(`player-${lastUpdatedId}`);
@@ -586,7 +606,6 @@
 
         async function revertirEntrega(id, nombre) {
             if(confirm(`¿Estás seguro de regresar el kit de ${nombre} a PENDIENTE?`)) {
-                // Hacemos el update. La actualización visual se hará sola vía Realtime
                 const { error } = await supabaseClient.from('prospectos_golf').update({ kit_entregado: false }).eq('id', id);
                 if(error) alert('Error al actualizar. Revisa la conexión.');
             }
@@ -616,7 +635,6 @@
         }
 
         async function procesarEntrega(id) {
-            // Hacemos el update. La actualización visual general se hará sola vía Realtime
             const { data, error } = await supabaseClient.from('prospectos_golf').update({ kit_entregado: true }).eq('id', id).select();
             if (data && data.length > 0) {
                 const p = data[0];
@@ -624,14 +642,14 @@
                 document.getElementById('modal-player-company').textContent = p.empresa;
                 document.getElementById('success-modal').style.display = 'flex';
                 
-                // Forzamos actualización local inmediata para el que escanea
                 lastUpdatedId = id;
                 refreshDashboard();
+                switchTab('delivered'); // ¡Cambia automáticamente a la pestaña de Entregados!
                 
                 document.getElementById('auto-close-txt').textContent = "Se cerrará automáticamente en 3s...";
                 autoCloseTimer = setTimeout(closeModal, 3000);
             } else {
-                alert("Pase no válido.");
+                alert("Pase no válido o ya escaneado.");
                 toggleView('view-staff-dashboard');
             }
         }
