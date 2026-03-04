@@ -18,6 +18,7 @@
             --primary: #0a4d2e;
             --accent: #c5a059;
             --success: #2ecc71;
+            --danger: #e74c3c;
             --glass: rgba(255, 255, 255, 0.95);
         }
 
@@ -186,11 +187,20 @@
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        .player-info { text-align: left; }
         .player-info b { font-size: 14px; color: #1a1a1a; display: block; }
         .player-info span { font-size: 12px; color: #888; }
+        
         .status-badge { font-size: 10px; padding: 5px 12px; border-radius: 30px; font-weight: 700; }
         .status-pending { background: #fff8f0; color: #ef6c00; }
         .status-delivered { background: #f0fdf4; color: #16a34a; }
+
+        .btn-undo {
+            background: #fff0f0; color: var(--danger); border: 1px solid #fadbd8;
+            padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold;
+            cursor: pointer; margin-left: 8px; transition: all 0.2s;
+        }
+        .btn-undo:hover { background: var(--danger); color: white; }
 
         /* MODALES */
         .modal-overlay {
@@ -229,9 +239,9 @@
     <div class="container">
         <!-- CABECERA CON LOGOS COMBINADOS -->
         <div class="top-branding">
-            <img src="logojacal.png" alt="El Jacal" class="header-logo-secondary">
-            <img src="CMG%201%20TRANSPARENTE.png" alt="CMG" class="header-logo-main">
-            <img src="logoanaya.png?v=3" alt="Anaya" class="header-logo-secondary">
+            <img src="logojacal.png" alt="El Jacal" class="header-logo-secondary" onerror="this.style.display='none'">
+            <img src="CMG%201%20TRANSPARENTE.png" alt="CMG" class="header-logo-main" onerror="this.style.display='none'">
+            <img src="logoanaya.png" alt="Anaya" class="header-logo-secondary" onerror="this.style.display='none'">
         </div>
 
         <!-- VISTA 1: REGISTRO -->
@@ -260,7 +270,7 @@
             
             <div id="ticket-capture">
                 <div class="qr-box">
-                    <img src="logoanaya.png?v=3" alt="Anaya" style="width: 120px; margin-bottom: 10px;">
+                    <img src="logoanaya.png" alt="Anaya" style="width: 120px; margin-bottom: 10px;" onerror="this.style.display='none'">
                     <h3 style="font-family: 'Playfair Display', serif; color: var(--primary); margin: 0 0 5px 0;">ANAYA INVITATIONAL</h3>
                     <p style="font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 15px;">Pase Oficial 2026</p>
                     
@@ -321,25 +331,24 @@
         <div class="sponsors-wrapper" id="sponsors-section">
             <p style="font-size: 10px; text-align: center; font-weight: 700; color: #aaa; margin: 0 0 10px 0; letter-spacing: 2px; text-transform: uppercase;">Partners Oficiales</p>
             <div class="sponsors-track">
-                <img src="CMG%201%20TRANSPARENTE.png" alt="CMG">
-                <img src="logodiana.png" alt="Diana">
-                <img src="logogolft.png" alt="Golf Target">
-                <img src="logojacal.png" alt="Jacal">
-                <img src="logovazpa.png" alt="Vazpa">
-                <img src="maja.jpg" alt="Maja">
-                <img src="perfilgooweb.png" alt="Gooweb">
-                <img src="CMG%201%20TRANSPARENTE.png" alt="CMG">
-                <img src="logodiana.png" alt="Diana">
-                <img src="logogolft.png" alt="Golf Target">
-                <img src="logojacal.png" alt="Jacal">
-                <img src="logovazpa.png" alt="Vazpa">
-                <img src="maja.jpg" alt="Maja">
-                <img src="perfilgooweb.png" alt="Gooweb">
+                <img src="CMG%201%20TRANSPARENTE.png" alt="CMG" onerror="this.style.display='none'">
+                <img src="logodiana.png" alt="Diana" onerror="this.style.display='none'">
+                <img src="logogolft.png" alt="Golf Target" onerror="this.style.display='none'">
+                <img src="logojacal.png" alt="Jacal" onerror="this.style.display='none'">
+                <img src="logovazpa.png" alt="Vazpa" onerror="this.style.display='none'">
+                <img src="maja.jpg" alt="Maja" onerror="this.style.display='none'">
+                <img src="perfilgooweb.png" alt="Gooweb" onerror="this.style.display='none'">
             </div>
         </div>
 
         <div class="creator-footer">
             <p class="creator-text">CREADO POR GOOWEB BY TARGETS</p>
+        </div>
+        
+        <!-- HASHTAGS OCULTOS PARA SEO (Basado en la campaña de Manzanillo) -->
+        <div style="display:none;">
+            #manzanillogolf #golfmexico #torneogolf #golflife #golfmanzanillo #anayainvitational 
+            #golf2026 #deportemanzanillo #golfers #vipregistration #manzanillo #colimagolf #golfclub #golfdestination
         </div>
     </div>
 
@@ -390,7 +399,6 @@
                 correo: document.getElementById('correo').value.trim()
             };
 
-            // --- DOBLE VALIDACIÓN DE CAMPOS ---
             if (!data.nombre || !data.empresa || !data.giro || !data.cumpleanos || !data.celular || !data.correo) {
                 err.textContent = '⚠️ Por favor, completa todos los campos obligatorios.';
                 err.style.display = 'block';
@@ -453,20 +461,43 @@
             document.getElementById('stat-total').textContent = data.length;
             document.getElementById('stat-delivered').textContent = delivered.length;
 
-            const renderRow = (p) => `
+            const renderPendingRow = (p) => `
                 <div class="player-item">
                     <div class="player-info">
                         <b>${p.nombre}</b>
                         <span>${p.empresa} (${p.giro || 'N/A'})</span>
                     </div>
-                    <span class="status-badge ${p.kit_entregado ? 'status-delivered' : 'status-pending'}">
-                        ${p.kit_entregado ? 'ENTREGADO' : 'PENDIENTE'}
-                    </span>
+                    <span class="status-badge status-pending">PENDIENTE</span>
                 </div>
             `;
 
-            document.getElementById('list-pending').innerHTML = pending.length ? pending.map(renderRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px;">Sin registros pendientes.</p>';
-            document.getElementById('list-delivered').innerHTML = delivered.length ? delivered.map(renderRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px;">Aún no hay entregas.</p>';
+            const renderDeliveredRow = (p) => `
+                <div class="player-item">
+                    <div class="player-info">
+                        <b>${p.nombre}</b>
+                        <span>${p.empresa} (${p.giro || 'N/A'})</span>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <span class="status-badge status-delivered">ENTREGADO</span>
+                        <button onclick="revertirEntrega(${p.id}, '${p.nombre}')" class="btn-undo" title="Deshacer entrega">DESHACER</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('list-pending').innerHTML = pending.length ? pending.map(renderPendingRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px;">Sin registros pendientes.</p>';
+            document.getElementById('list-delivered').innerHTML = delivered.length ? delivered.map(renderDeliveredRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px;">Aún no hay entregas.</p>';
+        }
+
+        // NUEVA FUNCIÓN: Regresar el kit a Pendiente
+        async function revertirEntrega(id, nombre) {
+            if(confirm(`¿Estás seguro de regresar el kit de ${nombre} a PENDIENTE?`)) {
+                const { error } = await supabaseClient.from('prospectos_golf').update({ kit_entregado: false }).eq('id', id);
+                if(error) {
+                    alert('Error al actualizar. Revisa la conexión.');
+                } else {
+                    refreshDashboard(); // Recarga la lista automáticamente
+                }
+            }
         }
 
         function startScanner() {
