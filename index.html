@@ -180,6 +180,17 @@
         .stat-box small { font-size: 10px; font-weight: 700; color: #999; text-transform: uppercase; }
         .stat-box div { font-size: 22px; font-weight: 800; color: var(--primary); }
 
+        /* BUSCADOR */
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            margin-bottom: 0;
+            border: 2px solid var(--primary);
+            background: #f8fcf9;
+            padding-left: 20px;
+        }
+
         /* TABS (Pestañas separadoras) */
         .tabs-container {
             display: flex; gap: 10px; margin-bottom: 20px; width: 100%;
@@ -347,19 +358,26 @@
                 <div class="stat-box"><small>Kits Entregados</small><div id="stat-delivered" style="color:var(--success)">0</div></div>
             </div>
 
+            <!-- BUSCADOR EN TIEMPO REAL -->
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="🔍 Buscar jugador o empresa..." oninput="filterLists()">
+            </div>
+
             <!-- TABS DE NAVEGACIÓN -->
-            <div class="tabs-container">
+            <div class="tabs-container" id="tabs-navigation">
                 <button id="tab-pending" class="tab-btn active" onclick="switchTab('pending')">Pendientes (0)</button>
                 <button id="tab-delivered" class="tab-btn" onclick="switchTab('delivered')">Entregados (0)</button>
             </div>
 
             <!-- SECCIÓN PENDIENTES -->
             <div id="section-pending" class="list-section">
+                <h3 id="header-pending" style="display:none; color:#888; font-size:11px; margin-bottom:5px; text-transform:uppercase;">Resultados Pendientes</h3>
                 <div id="list-pending" class="list-container"></div>
             </div>
 
             <!-- SECCIÓN ENTREGADOS -->
             <div id="section-delivered" class="list-section hidden">
+                <h3 id="header-delivered" style="display:none; color:#888; font-size:11px; margin-top:15px; margin-bottom:5px; text-transform:uppercase;">Resultados Entregados</h3>
                 <div id="list-delivered" class="list-container"></div>
             </div>
             
@@ -445,6 +463,9 @@
 
         // --- SISTEMA DE PESTAÑAS ---
         function switchTab(tab) {
+            document.getElementById('search-input').value = ""; // Limpia el buscador al cambiar
+            filterLists(); // Restaura la vista
+
             if(tab === 'pending') {
                 document.getElementById('tab-pending').classList.add('active');
                 document.getElementById('tab-delivered').classList.remove('active');
@@ -456,6 +477,49 @@
                 document.getElementById('section-pending').classList.add('hidden');
                 document.getElementById('section-delivered').classList.remove('hidden');
             }
+        }
+
+        // --- BUSCADOR INTELIGENTE ---
+        function filterLists() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const tabsNav = document.getElementById('tabs-navigation');
+            const secPending = document.getElementById('section-pending');
+            const secDelivered = document.getElementById('section-delivered');
+            const headerPending = document.getElementById('header-pending');
+            const headerDelivered = document.getElementById('header-delivered');
+
+            if (query.trim() !== "") {
+                // Modo búsqueda activa: Oculta pestañas y muestra ambas listas
+                tabsNav.style.display = 'none';
+                secPending.classList.remove('hidden');
+                secDelivered.classList.remove('hidden');
+                headerPending.style.display = 'block';
+                headerDelivered.style.display = 'block';
+            } else {
+                // Modo normal: Muestra pestañas y respeta la vista activa
+                tabsNav.style.display = 'flex';
+                headerPending.style.display = 'none';
+                headerDelivered.style.display = 'none';
+                
+                const isPendingActive = document.getElementById('tab-pending').classList.contains('active');
+                if(isPendingActive) {
+                    secPending.classList.remove('hidden');
+                    secDelivered.classList.add('hidden');
+                } else {
+                    secPending.classList.add('hidden');
+                    secDelivered.classList.remove('hidden');
+                }
+            }
+
+            // Filtrar elementos (Jugadores)
+            document.querySelectorAll('.player-item').forEach(item => {
+                const text = item.querySelector('.player-info').textContent.toLowerCase();
+                if (text.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         }
 
         document.getElementById('leadForm').addEventListener('submit', async function(e) {
@@ -595,6 +659,9 @@
             document.getElementById('list-pending').innerHTML = pending.length ? pending.map(renderPendingRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px; text-align:center;">Sin registros pendientes.</p>';
             document.getElementById('list-delivered').innerHTML = delivered.length ? delivered.map(renderDeliveredRow).join('') : '<p style="color:#aaa; font-size:12px; padding:20px; text-align:center;">Aún no hay entregas.</p>';
             
+            // Re-aplicar filtro si el usuario estaba escribiendo mientras se actualizó la lista en tiempo real
+            filterLists();
+
             setTimeout(() => {
                 if(lastUpdatedId) {
                     const el = document.getElementById(`player-${lastUpdatedId}`);
